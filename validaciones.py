@@ -27,7 +27,7 @@ class ParametrosRSA(NamedTuple):
     phi: int
 
 
-def texto_a_entero(texto, nombre):
+def texto_a_entero(texto, nombre, largo_max=LARGO_MAX):
     """Convierte texto a entero no negativo aceptando únicamente los dígitos 0-9."""
     if not isinstance(texto, str):
         raise TypeError("texto_a_entero espera un str")
@@ -35,9 +35,9 @@ def texto_a_entero(texto, nombre):
     if texto.strip() == "":
         raise ErrorValidacion(f"{nombre} está vacío. Escribe un número entero.")
 
-    if len(texto) > LARGO_MAX:
+    if largo_max is not None and len(texto) > largo_max:
         raise ErrorValidacion(
-            f"{nombre} es demasiado largo (máximo {LARGO_MAX} dígitos)."
+            f"{nombre} es demasiado largo (máximo {largo_max} dígitos)."
         )
 
     for c in texto:
@@ -59,7 +59,12 @@ def texto_a_entero(texto, nombre):
             f"{nombre} contiene un carácter no válido ({c!r}). Usa solo dígitos del 0 al 9."
         )
 
-    return int(texto)
+    # Convertir dígito a dígito evita el límite de conversión decimal de Python
+    # para e: el enunciado no impone una cota al exponente público.
+    valor = 0
+    for digito in texto:
+        valor = valor * 10 + int(digito)
+    return valor
 
 
 def validar_parametros(p_txt, q_txt, e_txt):
@@ -76,7 +81,7 @@ def validar_parametros(p_txt, q_txt, e_txt):
     """
     p = texto_a_entero(p_txt, "p")
     q = texto_a_entero(q_txt, "q")
-    e = texto_a_entero(e_txt, "e")
+    e = texto_a_entero(e_txt, "e", largo_max=None)
 
     for nombre, valor in (("p", p), ("q", q)):
         if valor > P_MAX:
@@ -112,7 +117,7 @@ def validar_parametros(p_txt, q_txt, e_txt):
     g = mcd(e, phi)
     if g != 1:
         raise ErrorValidacion(
-            f"e = {e} no es primo relativo con φ = {phi}: MCD(e, φ) = {g}. Elige otro e."
+            f"e = {e_txt} no es primo relativo con φ = {phi}: MCD(e, φ) = {g}. Elige otro e."
         )
 
     return ParametrosRSA(p, q, e, n, phi)

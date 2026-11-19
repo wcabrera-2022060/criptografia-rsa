@@ -112,4 +112,4 @@ comprobar("L no entero", lanza(TypeError, bloques_a_texto, [65066], "2"))
 if fallos == 0:
     print("Todas las pruebas de texto_bloques pasaron.")
 else:
-    print(f"{fallos} prueba(s) fallaron.")
+    raise AssertionError(f"{fallos} prueba(s) fallaron.")

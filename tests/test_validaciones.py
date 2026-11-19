@@ -81,7 +81,19 @@ def test_texto_demasiado_grande_o_largo():
     # un numero gigante no debe colgar el programa
     debe_fallar("9" * 50, "373", "17", "demasiado grande")
     debe_fallar("367", "9" * 101, "17", "demasiado largo")
-    debe_fallar("367", "373", "9" * 101, "demasiado largo")
+
+
+def test_e_sin_cota_artificial():
+    # e = phi * 10**101 + 17 es coprimo con phi y supera los 100 dígitos.
+    e_txt = "136152" + "0" * 99 + "17"
+    r = validar_parametros("367", "373", e_txt)
+    assert r.e % r.phi == 17
+
+
+def test_e_supera_limite_de_conversion_decimal_de_python():
+    e_txt = "136152" + "0" * 4998 + "17"
+    assert validar_parametros("367", "373", e_txt).e % 136152 == 17
+    debe_fallar("367", "373", "2" + "0" * 5000, "primo relativo")
 
 
 def test_no_primos():
