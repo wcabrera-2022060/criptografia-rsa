@@ -92,7 +92,13 @@ class AplicacionRSA(tk.Tk):
                  bg=AZUL_OSCURO, fg="#C9D9E8", font=(FUENTE, 10)).pack(anchor="w")
         tk.Label(encabezado, text="ASCII 32–126   ·   bloques de 2 caracteres",
                  bg="#1A4569", fg="#EAF3FA", font=(FUENTE, 9, "bold"),
-                 padx=14, pady=7).pack(side="right", padx=30)
+                 padx=14, pady=7).pack(side="right", padx=(8, 30))
+        tk.Button(
+            encabezado, text="Validaciones", command=self._abrir_validaciones,
+            bg="#1A4569", fg="#EAF3FA", activebackground="#24577F",
+            activeforeground="white", relief="flat", cursor="hand2",
+            font=(FUENTE, 9, "bold"), padx=14, pady=7,
+        ).pack(side="right")
 
     @staticmethod
     def _texto(parent, alto, solo_lectura=False):
@@ -196,6 +202,11 @@ class AplicacionRSA(tk.Tk):
         ttk.Button(salida, text="→ Enviar C y L a Desencriptar",
                    style="Transferir.TButton",
                    command=self._pasar_a_descifrar).pack(anchor="w", pady=(18, 0))
+        ttk.Button(salida, text="Ver detalle completo ↗",
+                   style="Transferir.TButton",
+                   command=lambda: self._abrir_detalle("cifrar")).pack(
+            anchor="w", pady=(8, 0)
+        )
 
         self.detalle_cifrar = self._crear_detalle(pagina, 2)
 
@@ -240,6 +251,11 @@ class AplicacionRSA(tk.Tk):
         self.resumen_descifrar = tk.StringVar(value="Completa los datos y presiona Desencriptar.")
         ttk.Label(salida, textvariable=self.resumen_descifrar,
                   style="Estado.TLabel", wraplength=420).pack(anchor="w")
+        ttk.Button(salida, text="Ver detalle completo ↗",
+                   style="Transferir.TButton",
+                   command=lambda: self._abrir_detalle("descifrar")).pack(
+            anchor="w", pady=(18, 0)
+        )
 
         self.detalle_descifrar = self._crear_detalle(pagina, 2)
 
@@ -275,16 +291,24 @@ class AplicacionRSA(tk.Tk):
 
     @staticmethod
     def _detalle(resultado, e, d=None):
-        relleno = "Sí; se añadió o retiró un espacio final." if resultado.hubo_relleno else "No."
+        if resultado.hubo_relleno:
+            relleno = (
+                "Sí; se retiró exactamente un espacio final de relleno."
+                if d is not None
+                else "Sí; se agregó exactamente un espacio final de relleno."
+            )
+        else:
+            relleno = "No se requirió relleno."
         lineas = [
             f"LLAVE PÚBLICA: (e, n) = ({e}, {resultado.n})",
-            f"n = {resultado.n}     φ = {resultado.phi}     L = {resultado.L}     "
-            f"bloques = {resultado.k}",
+            f"n = {resultado.n}     φ = {resultado.phi}     MCD(e, φ) = {resultado.mcd_e_phi}",
+            f"Longitud original L = {resultado.L}     Cantidad de bloques = {resultado.k}",
             f"Relleno: {relleno}",
         ]
         if d is not None:
             lineas.append(f"EXPONENTE PRIVADO: d = {d}")
         lineas.extend([
+            f"Mensaje original/recuperado: {resultado.mensaje!r}",
             f"Texto con relleno: {resultado.texto_completo!r}",
             "ASCII: " + " ".join(f"{codigo:03d}" for codigo in resultado.codigos),
             "",
@@ -354,6 +378,94 @@ class AplicacionRSA(tk.Tk):
             f"Listo · d = {resultado.d} · L = {resultado.L} · "
             f"relleno retirado: {'sí' if resultado.hubo_relleno else 'no'}"
         )
+        self.ultimo_descifrado = resultado
+
+    def _abrir_detalle(self, operacion):
+        if operacion == "cifrar":
+            if not hasattr(self, "ultimo_cifrado"):
+                messagebox.showinfo("Sin resultado", "Primero realiza una encriptación válida.", parent=self)
+                return
+            resultado = self.ultimo_cifrado
+            e = self.vars_cifrar["e"].get()
+            d = None
+            titulo = "Detalle de la encriptación"
+        else:
+            if not hasattr(self, "ultimo_descifrado"):
+                messagebox.showinfo("Sin resultado", "Primero realiza una desencriptación válida.", parent=self)
+                return
+            resultado = self.ultimo_descifrado
+            e = self.vars_descifrar["e"].get()
+            d = resultado.d
+            titulo = "Detalle de la desencriptación"
+
+        ventana = tk.Toplevel(self)
+        ventana.title(titulo)
+        ventana.geometry("950x650")
+        ventana.minsize(760, 520)
+        ventana.configure(bg=FONDO)
+        contenido = tk.Frame(ventana, bg=FONDO, padx=22, pady=20)
+        contenido.pack(fill="both", expand=True)
+        tk.Label(contenido, text=titulo, bg=FONDO, fg=AZUL_OSCURO,
+                 font=(FUENTE, 18, "bold")).pack(anchor="w")
+        tk.Label(
+            contenido,
+            text="Resumen matemático, representación ASCII y bloques de la operación.",
+            bg=FONDO, fg=SECUNDARIO, font=(FUENTE, 10),
+        ).pack(anchor="w", pady=(2, 14))
+
+        resumen = tk.Frame(contenido, bg=AZUL_CLARO, padx=14, pady=10)
+        resumen.pack(fill="x", pady=(0, 12))
+        texto_resumen = (
+            f"n = {resultado.n}    φ = {resultado.phi}    "
+            f"MCD(e, φ) = {resultado.mcd_e_phi}    L = {resultado.L}"
+        )
+        if d is not None:
+            texto_resumen += f"    d = {d}"
+        tk.Label(resumen, text=texto_resumen, bg=AZUL_CLARO, fg=AZUL_OSCURO,
+                 font=(FUENTE, 10, "bold")).pack(anchor="w")
+
+        detalle = self._texto(contenido, 20, solo_lectura=True)
+        detalle.configure(wrap="none")
+        detalle.pack(fill="both", expand=True)
+        self._escribir(detalle, self._detalle(resultado, e, d))
+
+    def _abrir_validaciones(self):
+        ventana = tk.Toplevel(self)
+        ventana.title("Validaciones de datos")
+        ventana.geometry("890x610")
+        ventana.minsize(720, 500)
+        ventana.configure(bg=FONDO)
+        contenido = tk.Frame(ventana, bg=FONDO, padx=22, pady=20)
+        contenido.pack(fill="both", expand=True)
+        tk.Label(contenido, text="Validaciones de datos", bg=FONDO, fg=AZUL_OSCURO,
+                 font=(FUENTE, 18, "bold")).pack(anchor="w")
+        tk.Label(
+            contenido,
+            text="Ante un error, el programa muestra un mensaje claro y limpia el resultado anterior.",
+            bg=FONDO, fg=SECUNDARIO, font=(FUENTE, 10),
+        ).pack(anchor="w", pady=(2, 14))
+
+        texto = self._texto(contenido, 22, solo_lectura=True)
+        texto.pack(fill="both", expand=True)
+        contenido_validaciones = (
+            "PARÁMETROS p, q y e\n"
+            "• Deben ser enteros. p y q deben ser primos distintos.\n"
+            "• n = p·q debe cumplir 126126 < n < 1000000.\n"
+            "• e debe ser mayor que 1 y MCD(e, φ) debe ser 1.\n\n"
+            "MENSAJE M\n"
+            "• Cada carácter debe pertenecer al ASCII imprimible: códigos 32 a 126.\n"
+            "• El programa no sustituye ni elimina caracteres automáticamente.\n\n"
+            "CIFRADO C\n"
+            "• Cada bloque debe tener exactamente seis dígitos decimales.\n"
+            "• Los bloques se separan por un solo espacio y cada c debe cumplir 0 ≤ c < n.\n\n"
+            "LONGITUD L\n"
+            "• Si C tiene k bloques, L debe ser 2k o 2k − 1.\n"
+            "• L impar indica que se agregó un único espacio de relleno.\n\n"
+            "TEXTO RECUPERADO\n"
+            "• Cada bloque debe producir dos códigos ASCII válidos.\n"
+            "• Si L es impar, el último carácter recuperado debe ser el espacio de relleno."
+        )
+        self._escribir(texto, contenido_validaciones)
 
 
 if __name__ == "__main__":

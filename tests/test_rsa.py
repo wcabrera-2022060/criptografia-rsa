@@ -23,6 +23,7 @@ def test_desencriptar_rsa():
     d = desencriptar("026054 123875", "3", P, Q, E)
     assert d.d == 8009
     assert d.n == 136891 and d.phi == 136152
+    assert d.mcd_e_phi == 1
     assert d.L == 3 and d.k == 2 and d.hubo_relleno is True
     assert d.bloques_c == [26054, 123875]
     assert d.bloques_m == [82083, 65032]
@@ -36,6 +37,7 @@ def test_encriptar_referencia_y_detalle():
     assert (r.L, r.k, r.hubo_relleno) == (3, 2, True)
     assert r.llave_publica == (17, 136891)
     assert (r.n, r.phi) == (136891, 136152)
+    assert r.mcd_e_phi == 1
     assert r.mensaje == "RSA" and r.texto_completo == "RSA "
     assert r.codigos == [82, 83, 65, 32]
     assert r.bloques_m == [82083, 65032]

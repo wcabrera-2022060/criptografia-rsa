@@ -13,6 +13,7 @@ class ResultadoCifrado(NamedTuple):
     llave_publica: tuple[int, int]
     n: int
     phi: int
+    mcd_e_phi: int
     k: int
     hubo_relleno: bool
     mensaje: str
@@ -40,6 +41,7 @@ def encriptar(mensaje, p_txt, q_txt, e_txt):
         llave_publica=(params.e, params.n),
         n=params.n,
         phi=params.phi,
+        mcd_e_phi=1,
         k=len(bloques_c),
         hubo_relleno=texto.relleno,
         mensaje=mensaje,
@@ -54,6 +56,7 @@ class ResultadoDescifrado(NamedTuple):
     d: int                       # exponente privado
     n: int
     phi: int
+    mcd_e_phi: int
     L: int
     k: int                       # cantidad de bloques cifrados
     hubo_relleno: bool           # True si L es impar
@@ -136,6 +139,7 @@ def desencriptar(c_txt, l_txt, p_txt, q_txt, e_txt):
         d=d,
         n=params.n,
         phi=params.phi,
+        mcd_e_phi=1,
         L=L,
         k=k,
         hubo_relleno=res.relleno,

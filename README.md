@@ -27,7 +27,7 @@ py run_tests.py
 
 ## Uso de la aplicación
 
-La pestaña **Encriptar** recibe el mensaje, p, q y e. Al completar una operación válida muestra el cifrado C, la longitud original L y la llave pública `(e, n)`. El botón **Enviar C y L a Desencriptar** copia los datos necesarios a la otra pestaña.
+La pestaña **Encriptar** recibe el mensaje, p, q y e. Los primos deben ser distintos, `126126 < n = p·q < 1000000`, y el exponente debe cumplir `e > 1` y `MCD(e, φ) = 1`, donde `φ = (p−1)(q−1)` es la función phi o totiente de Euler de `n`. Al completar una operación válida muestra el cifrado C, la longitud original L y la llave pública `(e, n)`. El botón **Enviar C y L a Desencriptar** copia los datos necesarios a la otra pestaña.
 
 La pestaña **Desencriptar** recibe C, L, p, q y e. C debe contener bloques de exactamente seis dígitos separados por un solo espacio. Con los mismos valores RSA utilizados para cifrar, la aplicación muestra el exponente privado d y el mensaje recuperado.
 
