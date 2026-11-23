@@ -19,20 +19,55 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-      .stApp { background: #F4F7FB; }
-      [data-testid="stHeader"] { background: transparent; }
+      .stApp { background: #F4F7FB; color: #243B53; }
+      [data-testid="stHeader"], #MainMenu, footer { background: transparent; visibility: hidden; }
+      .block-container { max-width: 1180px; padding-top: 1.8rem; padding-bottom: 2rem; }
       .rsa-banner {
-        background: #102A43; border-radius: 12px; color: white;
-        padding: 1.2rem 1.7rem; margin-bottom: 1.25rem;
+        background: #102A43; border-radius: 10px; color: white;
+        padding: 1.25rem 1.8rem; margin-bottom: 1.2rem;
       }
-      .rsa-banner h1 { margin: 0; font-size: 2rem; }
+      .rsa-banner h1 { margin: 0; font-size: 2.1rem; letter-spacing: .02em; }
       .rsa-banner p { color: #C9D9E8; margin: .2rem 0 0; }
-      .block-container { padding-top: 1.8rem; }
+      .app-pill {
+        display: inline-block; float: right; margin-top: -3.4rem; color: #EAF3FA;
+        background: #1A4569; padding: .4rem .75rem; border-radius: 5px;
+        font-size: .8rem; font-weight: 700;
+      }
+      .page-title { color: #102A43; font-size: 1.45rem; font-weight: 700; margin: .4rem 0 0; }
+      .page-subtitle { color: #627D98; font-size: .93rem; margin: .1rem 0 1.1rem; }
+      .section-title { color: #102A43; font-size: 1.1rem; font-weight: 700; margin: 0; }
+      .section-help { color: #627D98; font-size: .85rem; margin: .1rem 0 1rem; }
+      .detail-title { color: #102A43; font-size: 1.1rem; font-weight: 700; margin: 0; }
+      .detail-help { color: #627D98; font-size: .85rem; margin: .15rem 0 .75rem; }
+      [data-testid="stVerticalBlockBorderWrapper"] {
+        background: #FFFFFF; border-color: #D9E2EC !important; border-radius: 7px;
+        box-shadow: 0 1px 2px rgba(16,42,67,.04);
+      }
+      [data-baseweb="tab-list"] { gap: 3px; border-bottom: 0; }
+      [data-baseweb="tab"] {
+        background: #DCE6F0; border-radius: 6px 6px 0 0; color: #627D98;
+        font-weight: 700; padding: .6rem 1.3rem;
+      }
+      [aria-selected="true"][data-baseweb="tab"] { background: #FFFFFF; color: #102A43; }
+      [data-baseweb="tab-highlight"] { background-color: #FFFFFF !important; }
+      .stButton > button {
+        background: #1D6FA5; color: white; border: 0; border-radius: 5px;
+        font-weight: 700; padding: .55rem 1rem;
+      }
+      .stButton > button:hover { background: #155A87; color: white; border: 0; }
+      .stTextInput input, .stTextArea textarea {
+        background: #FBFDFF; border-color: #D9E2EC; color: #243B53;
+        font-family: "Cascadia Mono", Consolas, monospace;
+      }
+      .stTextInput label, .stTextArea label { color: #243B53 !important; font-weight: 700; }
+      [data-testid="stCodeBlock"] { border: 1px solid #D9E2EC; border-radius: 4px; }
+      .rsa-footer { color: #627D98; font-size: .78rem; text-align: center; margin-top: 1.5rem; }
     </style>
     <div class="rsa-banner">
       <h1>RSA</h1>
       <p>Cifrado de texto · Matemática Discreta 1 &nbsp;·&nbsp; ASCII 32–126 · bloques de 2 caracteres</p>
     </div>
+    <div class="app-pill">ASCII 32–126 · bloques de 2 caracteres</div>
     """,
     unsafe_allow_html=True,
 )
@@ -100,9 +135,13 @@ def _parametros(prefijo):
 
 
 def _mostrar_detalle(resultado, e, d=None):
-    st.subheader("Detalle del proceso")
-    st.caption("Valores calculados, ASCII y bloques numéricos de la operación.")
-    st.code(_detalle(resultado, e, d), language=None)
+    with st.container(border=True):
+        st.markdown('<p class="detail-title">Detalle del proceso</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="detail-help">Valores calculados y relación entre cada pareja de caracteres, m y c.</p>',
+            unsafe_allow_html=True,
+        )
+        st.code(_detalle(resultado, e, d), language=None)
 
 
 def _mostrar_validaciones():
@@ -126,37 +165,45 @@ _mostrar_validaciones()
 tab_cifrar, tab_descifrar = st.tabs(["🔒 Encriptar", "🔓 Desencriptar"])
 
 with tab_cifrar:
+    st.markdown('<p class="page-title">Encriptar mensaje</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="page-subtitle">Convierte el texto en bloques RSA de seis dígitos.</p>',
+        unsafe_allow_html=True,
+    )
     izquierda, derecha = st.columns(2, gap="large")
     with izquierda:
-        st.subheader("1. Datos de entrada")
-        st.caption("El mensaje conserva mayúsculas, signos y espacios.")
-        mensaje = st.text_area(
-            "Mensaje M", height=150,
-            placeholder="Escribe el mensaje que deseas encriptar…",
-            help="No se admiten tildes, ñ, tabulaciones ni saltos de línea.",
-        )
-        _parametros("enc")
-        ejecutar_cifrado = st.button("Encriptar mensaje", type="primary", use_container_width=True)
+        with st.container(border=True):
+            st.markdown('<p class="section-title">1. Datos de entrada</p>', unsafe_allow_html=True)
+            st.markdown('<p class="section-help">El mensaje conserva mayúsculas, signos y espacios.</p>', unsafe_allow_html=True)
+            mensaje = st.text_area(
+                "Mensaje M", height=150,
+                placeholder="Escribe el mensaje que deseas encriptar…",
+                help="No se admiten tildes, ñ, tabulaciones ni saltos de línea.",
+            )
+            _parametros("enc")
+            ejecutar_cifrado = st.button("Encriptar mensaje", type="primary", use_container_width=True)
 
     with derecha:
-        st.subheader("2. Resultado")
-        st.caption("Guarda C y L; ambos se necesitan para desencriptar.")
-        if "resultado_cifrado" in st.session_state:
-            resultado = st.session_state.resultado_cifrado
-            st.text_area("Cifrado C", value=resultado.C, height=150, disabled=True)
-            st.success(
-                f"Listo · L = {resultado.L} · llave pública = {resultado.llave_publica} · "
-                f"relleno: {'sí' if resultado.hubo_relleno else 'no'}"
-            )
-            if st.button("Enviar C y L a Desencriptar", use_container_width=True):
-                st.session_state.des_c = resultado.C
-                st.session_state.des_l = str(resultado.L)
-                st.session_state.des_p = st.session_state.enc_p
-                st.session_state.des_q = st.session_state.enc_q
-                st.session_state.des_e = st.session_state.enc_e
-                st.toast("C, L y parámetros copiados a Desencriptar.")
-        else:
-            st.info("Completa los datos y presiona Encriptar.")
+        with st.container(border=True):
+            st.markdown('<p class="section-title">2. Resultado</p>', unsafe_allow_html=True)
+            st.markdown('<p class="section-help">Guarda C y L; ambos se necesitan para desencriptar.</p>', unsafe_allow_html=True)
+            if "resultado_cifrado" in st.session_state:
+                resultado = st.session_state.resultado_cifrado
+                st.markdown("**Cifrado C**")
+                st.code(resultado.C, language=None)
+                st.success(
+                    f"Listo · L = {resultado.L} · llave pública = {resultado.llave_publica} · "
+                    f"relleno: {'sí' if resultado.hubo_relleno else 'no'}"
+                )
+                if st.button("→ Enviar C y L a Desencriptar", use_container_width=True):
+                    st.session_state.des_c = resultado.C
+                    st.session_state.des_l = str(resultado.L)
+                    st.session_state.des_p = st.session_state.enc_p
+                    st.session_state.des_q = st.session_state.enc_q
+                    st.session_state.des_e = st.session_state.enc_e
+                    st.toast("C, L y parámetros copiados a Desencriptar.")
+            else:
+                st.info("Completa los datos y presiona Encriptar.")
 
     if ejecutar_cifrado:
         try:
@@ -171,27 +218,35 @@ with tab_cifrar:
         _mostrar_detalle(st.session_state.resultado_cifrado, st.session_state.enc_e)
 
 with tab_descifrar:
+    st.markdown('<p class="page-title">Desencriptar mensaje</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="page-subtitle">Recupera el texto original con C, L y los parámetros RSA.</p>',
+        unsafe_allow_html=True,
+    )
     izquierda, derecha = st.columns(2, gap="large")
     with izquierda:
-        st.subheader("1. Datos de entrada")
-        st.caption("C usa bloques de seis dígitos separados por un solo espacio.")
-        st.text_area("Cifrado C", key="des_c", height=130)
-        st.text_input("Longitud original L", key="des_l")
-        _parametros("des")
-        ejecutar_descifrado = st.button("Desencriptar mensaje", type="primary", use_container_width=True)
+        with st.container(border=True):
+            st.markdown('<p class="section-title">1. Datos de entrada</p>', unsafe_allow_html=True)
+            st.markdown('<p class="section-help">C usa bloques de seis dígitos separados por un solo espacio.</p>', unsafe_allow_html=True)
+            st.text_area("Cifrado C", key="des_c", height=130)
+            st.text_input("Longitud original L", key="des_l")
+            _parametros("des")
+            ejecutar_descifrado = st.button("Desencriptar mensaje", type="primary", use_container_width=True)
 
     with derecha:
-        st.subheader("2. Mensaje recuperado")
-        st.caption("El resultado conserva todos los espacios originales.")
-        if "resultado_descifrado" in st.session_state:
-            resultado = st.session_state.resultado_descifrado
-            st.text_area("Mensaje M", value=resultado.mensaje, height=150, disabled=True)
-            st.success(
-                f"Listo · d = {resultado.d} · L = {resultado.L} · "
-                f"relleno retirado: {'sí' if resultado.hubo_relleno else 'no'}"
-            )
-        else:
-            st.info("Completa los datos y presiona Desencriptar.")
+        with st.container(border=True):
+            st.markdown('<p class="section-title">2. Mensaje recuperado</p>', unsafe_allow_html=True)
+            st.markdown('<p class="section-help">El resultado conserva todos los espacios originales.</p>', unsafe_allow_html=True)
+            if "resultado_descifrado" in st.session_state:
+                resultado = st.session_state.resultado_descifrado
+                st.markdown("**Mensaje M**")
+                st.code(resultado.mensaje, language=None)
+                st.success(
+                    f"Listo · d = {resultado.d} · L = {resultado.L} · "
+                    f"relleno retirado: {'sí' if resultado.hubo_relleno else 'no'}"
+                )
+            else:
+                st.info("Completa los datos y presiona Desencriptar.")
 
     if ejecutar_descifrado:
         try:
@@ -206,3 +261,8 @@ with tab_descifrar:
     if "resultado_descifrado" in st.session_state:
         resultado = st.session_state.resultado_descifrado
         _mostrar_detalle(resultado, st.session_state.des_e, resultado.d)
+
+st.markdown(
+    '<p class="rsa-footer">Proyecto RSA · MM2015 Matemática Discreta 1 · Validación ASCII 32–126</p>',
+    unsafe_allow_html=True,
+)
