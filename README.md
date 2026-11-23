@@ -7,7 +7,7 @@
 
 ## Requisitos e instalación
 
-El proyecto requiere Python 3.10 o superior y usa únicamente la biblioteca estándar de Python. No necesita instalar dependencias externas ni incluye un archivo `requirements.txt`.
+La aplicación de escritorio requiere Python 3.10 o superior y usa únicamente la biblioteca estándar. La versión web desplegable requiere además Streamlit; la dependencia está declarada en `requirements.txt`.
 
 ## Ejecución
 
@@ -24,6 +24,19 @@ Para ejecutar las pruebas automáticas:
 ```console
 py run_tests.py
 ```
+
+### Versión web y despliegue
+
+La misma aplicación está disponible como interfaz web en `app.py`; usa exactamente los mismos módulos RSA y validaciones que la interfaz de escritorio. Para ejecutarla localmente:
+
+```console
+py -m pip install -r requirements.txt
+py -m streamlit run app.py
+```
+
+Para desplegarla, subir el repositorio a GitHub y, en [Streamlit Community Cloud](https://share.streamlit.io/), crear una aplicación seleccionando `app.py` como archivo principal. Una vez publicado, agregar aquí el enlace público entregable:
+
+**Enlace de la aplicación desplegada:** pendiente de publicación.
 
 ## Uso de la aplicación
 
